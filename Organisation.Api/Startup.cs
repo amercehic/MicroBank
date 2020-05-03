@@ -1,4 +1,5 @@
 using MediatR;
+using MicroBank.Common.ExceptionHandler;
 using MicroBank.Common.Identity;
 using MicroBank.Common.Repository;
 using Microsoft.AspNetCore.Builder;
@@ -28,6 +29,7 @@ namespace Organisation.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers(options => options.Filters.Add(new HttpResponseExceptionFilter()));
             services.AddDbContext<OrganisationDbContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("OrganisationDbConnection"));
@@ -36,7 +38,6 @@ namespace Organisation.Api
             services.AddHttpContextAccessor();
             services.AddScoped(typeof(ClaimsPrincipalUtil)); // to get values from claims
             services.AddScoped(typeof(IEfRepository<,>), typeof(EfRepository<,>));
-            services.AddControllers();
 
             services.AddAuthentication("Bearer")
                 .AddJwtBearer("Bearer", options =>
@@ -57,6 +58,10 @@ namespace Organisation.Api
             services.AddScoped<DbContext, OrganisationDbContext>();
             services.AddScoped(typeof(IOfficeRepository), typeof(OfficeRepository));
             services.AddScoped(typeof(IOfficeService), typeof(OfficeService));
+
+            services.AddScoped(typeof(IStaffMemberRepository), typeof(StaffMemberRepository));
+            services.AddScoped(typeof(IStaffMemberService), typeof(StaffMemberService));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
