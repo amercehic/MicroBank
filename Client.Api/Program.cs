@@ -1,11 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Client.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Organisation.Infrastructure.Data;
-using System;
 
-namespace Organisation.Api
+namespace Client.Api
 {
     public class Program
     {
@@ -26,8 +30,8 @@ namespace Organisation.Api
             var loggerFactory = services.GetRequiredService<ILoggerFactory>();
             try
             {
-                var catalogContext = services.GetRequiredService<OrganisationDbContext>();
-                OrganisationDbContextSeed.SeedAsync(catalogContext, loggerFactory).Wait();
+                var catalogContext = services.GetRequiredService<ClientDbContext>();
+                ClientDbContextSeed.SeedAsync(catalogContext, loggerFactory).Wait();
             }
             catch (Exception ex)
             {
