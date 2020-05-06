@@ -1,3 +1,8 @@
+using Client.Core.Interfaces.Repository;
+using Client.Core.Interfaces.Service;
+using Client.Core.Services;
+using Client.Infrastructure.Data;
+using Client.Infrastructure.Repository;
 using MediatR;
 using MicroBank.Common.ExceptionHandler;
 using MicroBank.Common.Identity;
@@ -9,13 +14,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Organisation.Core.Interfaces.Repository;
-using Organisation.Core.Interfaces.Service;
-using Organisation.Core.Services;
-using Organisation.Infrastructure.Data;
-using Organisation.Infrastructure.Repository;
 
-namespace Organisation.Api
+namespace Client.Api
 {
     public class Startup
     {
@@ -30,9 +30,9 @@ namespace Organisation.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers(options => options.Filters.Add(new HttpResponseExceptionFilter()));
-            services.AddDbContext<OrganisationDbContext>(options =>
+            services.AddDbContext<ClientDbContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("OrganisationDbConnection"));
+                options.UseSqlServer(Configuration.GetConnectionString("ClientDbConnection"));
             });
 
             services.AddHttpContextAccessor();
@@ -50,18 +50,16 @@ namespace Organisation.Api
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Organization Microservice", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Client Microservice", Version = "v1" });
             });
 
             services.AddMediatR(typeof(Startup));
+            services.AddScoped<DbContext, ClientDbContext>();
+            services.AddScoped(typeof(IClientApplicationRepository), typeof(ClientApplicationRepository));
+            services.AddScoped(typeof(IClientApplicationService), typeof(ClientApplicationService));
 
-            services.AddScoped<DbContext, OrganisationDbContext>();
-            services.AddScoped(typeof(IOfficeRepository), typeof(OfficeRepository));
-            services.AddScoped(typeof(IOfficeService), typeof(OfficeService));
-
-            services.AddScoped(typeof(IStaffMemberRepository), typeof(StaffMemberRepository));
-            services.AddScoped(typeof(IStaffMemberService), typeof(StaffMemberService));
-
+            services.AddScoped(typeof(IClientRepository), typeof(ClientRepository));
+            services.AddScoped(typeof(IClientService), typeof(ClientService));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -82,7 +80,7 @@ namespace Organisation.Api
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Organization Microservice V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Client Microservice V1");
             });
 
             app.UseEndpoints(endpoints =>
