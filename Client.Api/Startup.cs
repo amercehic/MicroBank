@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Client.Core.Interfaces.Repository;
 using Client.Core.Interfaces.Service;
 using Client.Core.Services;
@@ -13,13 +9,10 @@ using MicroBank.Common.Identity;
 using MicroBank.Common.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
 namespace Client.Api
@@ -64,6 +57,9 @@ namespace Client.Api
             services.AddScoped<DbContext, ClientDbContext>();
             services.AddScoped(typeof(IClientApplicationRepository), typeof(ClientApplicationRepository));
             services.AddScoped(typeof(IClientApplicationService), typeof(ClientApplicationService));
+
+            services.AddScoped(typeof(IClientRepository), typeof(ClientRepository));
+            services.AddScoped(typeof(IClientService), typeof(ClientService));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

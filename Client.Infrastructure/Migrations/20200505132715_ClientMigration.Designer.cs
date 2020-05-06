@@ -4,14 +4,16 @@ using Client.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Client.Infrastructure.Migrations
 {
     [DbContext(typeof(ClientDbContext))]
-    partial class ClientDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200505132715_ClientMigration")]
+    partial class ClientMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -169,49 +171,6 @@ namespace Client.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ClientFamilyDetailsData");
-                });
-
-            modelBuilder.Entity("Client.Core.Entities.Client.RejectedClientApplication", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ClientApplicationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(200)")
-                        .HasMaxLength(200);
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(100)")
-                        .HasMaxLength(100);
-
-                    b.Property<DateTime>("RejectionDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientApplicationId");
-
-                    b.ToTable("RejectedClientApplications");
                 });
 
             modelBuilder.Entity("Client.Core.Entities.ClientApplication", b =>
@@ -384,15 +343,6 @@ namespace Client.Infrastructure.Migrations
                     b.HasOne("Client.Core.Entities.Client.ClientFamilyDetailsData", "ClientFamilyDetailsData")
                         .WithMany()
                         .HasForeignKey("ClientFamilyDetailsDataId");
-                });
-
-            modelBuilder.Entity("Client.Core.Entities.Client.RejectedClientApplication", b =>
-                {
-                    b.HasOne("Client.Core.Entities.ClientApplication", "ClientApplication")
-                        .WithMany()
-                        .HasForeignKey("ClientApplicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Client.Core.Entities.ClientApplication", b =>

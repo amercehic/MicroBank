@@ -27,10 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Client.Core\Client.Core.csproj" />
     <ProjectReference Include="..\Client.Infrastructure\Client.Infrastructure.csproj" />
     <ProjectReference Include="..\MicroBank.Common\MicroBank.Common.csproj" />

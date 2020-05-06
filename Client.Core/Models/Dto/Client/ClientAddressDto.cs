@@ -1,8 +1,8 @@
-﻿using Client.Core.Entities;
+﻿using Client.Core.Entities.Client;
 
-namespace Client.Core.Models.Dto
+namespace Client.Core.Models.Dto.Client
 {
-    public class ClientApplicationAddressDto
+    public class ClientAddressDto
     {
         public string AddressLine { get; set; }
         public string Street { get; set; }
@@ -10,12 +10,12 @@ namespace Client.Core.Models.Dto
         public string CountryCode { get; set; }
         public string Province { get; set; }
 
-        public ClientApplicationAddressDto()
+        public ClientAddressDto()
         {
 
         }
 
-        public ClientApplicationAddressDto(ClientApplicationAddressData entity)
+        public ClientAddressDto(ClientAddressData entity)
         {
             AddressLine = entity.AddressLine;
             Street = entity.Street;
