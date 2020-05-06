@@ -57,6 +57,8 @@ namespace Client.Api
             services.AddScoped<DbContext, ClientDbContext>();
             services.AddScoped(typeof(IClientApplicationRepository), typeof(ClientApplicationRepository));
             services.AddScoped(typeof(IClientApplicationService), typeof(ClientApplicationService));
+            services.AddScoped(typeof(IRejectedClientApplicationService), typeof(RejectedClientApplicationService));
+
 
             services.AddScoped(typeof(IClientRepository), typeof(ClientRepository));
             services.AddScoped(typeof(IClientService), typeof(ClientService));
