@@ -30,7 +30,7 @@ namespace Client.Infrastructure.Migrations
                         column: x => x.ClientApplicationId,
                         principalTable: "ClientApplications",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(

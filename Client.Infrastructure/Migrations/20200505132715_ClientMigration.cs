@@ -90,7 +90,7 @@ namespace Client.Infrastructure.Migrations
                         column: x => x.ClientApplicationId,
                         principalTable: "ClientApplications",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Clients_ClientContactData_ClientContactDataId",
                         column: x => x.ClientContactDataId,
