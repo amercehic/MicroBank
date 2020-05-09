@@ -11,7 +11,7 @@ namespace Client.Core.Specifications
         {
             ApplyPaging(filter.Page * filter.PageSize, filter.PageSize);
             ApplyOrderByDescending(s => s.CreatedAt);
-            AddInclude(o => o.ClientApplication);
+            AddInclude(o => o.Client);
         }
     }
 }

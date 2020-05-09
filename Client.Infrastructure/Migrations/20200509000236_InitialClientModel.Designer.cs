@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Client.Infrastructure.Migrations
 {
     [DbContext(typeof(ClientDbContext))]
-    [Migration("20200504122842_ClientApplicationModel")]
-    partial class ClientApplicationModel
+    [Migration("20200509000236_InitialClientModel")]
+    partial class InitialClientModel
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,22 +21,28 @@ namespace Client.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("Client.Core.Entities.ClientApplication", b =>
+            modelBuilder.Entity("Client.Core.Entities.Client.Client", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("ActivationDateTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("Active")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("ClientApplicationAddressDataId")
+                    b.Property<DateTime?>("ApprovalDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ClientAddressDataId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ClientApplicationContactDataId")
+                    b.Property<int?>("ClientContactDataId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ClientApplicationFamilyDetailsDataId")
+                    b.Property<int?>("ClientFamilyDetailsDataId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -70,8 +76,7 @@ namespace Client.Infrastructure.Migrations
                         .HasMaxLength(20);
 
                     b.Property<string>("Status")
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("SubmittedOnDate")
                         .HasColumnType("datetime2");
@@ -84,16 +89,16 @@ namespace Client.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientApplicationAddressDataId");
+                    b.HasIndex("ClientAddressDataId");
 
-                    b.HasIndex("ClientApplicationContactDataId");
+                    b.HasIndex("ClientContactDataId");
 
-                    b.HasIndex("ClientApplicationFamilyDetailsDataId");
+                    b.HasIndex("ClientFamilyDetailsDataId");
 
-                    b.ToTable("ClientApplications");
+                    b.ToTable("Clients");
                 });
 
-            modelBuilder.Entity("Client.Core.Entities.ClientApplicationAddressData", b =>
+            modelBuilder.Entity("Client.Core.Entities.Client.ClientAddressData", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -124,10 +129,10 @@ namespace Client.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ClientApplicationAddressData");
+                    b.ToTable("ClientAddressData");
                 });
 
-            modelBuilder.Entity("Client.Core.Entities.ClientApplicationContactData", b =>
+            modelBuilder.Entity("Client.Core.Entities.Client.ClientContactData", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -143,10 +148,10 @@ namespace Client.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ClientApplicationContactData");
+                    b.ToTable("ClientContactData");
                 });
 
-            modelBuilder.Entity("Client.Core.Entities.ClientApplicationFamilyDetailsData", b =>
+            modelBuilder.Entity("Client.Core.Entities.Client.ClientFamilyDetailsData", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -169,22 +174,74 @@ namespace Client.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ClientApplicationFamilyDetailsData");
+                    b.ToTable("ClientFamilyDetailsData");
                 });
 
-            modelBuilder.Entity("Client.Core.Entities.ClientApplication", b =>
+            modelBuilder.Entity("Client.Core.Entities.Client.RejectedClientApplication", b =>
                 {
-                    b.HasOne("Client.Core.Entities.ClientApplicationAddressData", "ClientApplicationAddressData")
-                        .WithMany()
-                        .HasForeignKey("ClientApplicationAddressDataId");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
-                    b.HasOne("Client.Core.Entities.ClientApplicationContactData", "ClientApplicationContactData")
-                        .WithMany()
-                        .HasForeignKey("ClientApplicationContactDataId");
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.HasOne("Client.Core.Entities.ClientApplicationFamilyDetailsData", "ClientApplicationFamilyDetailsData")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(200)")
+                        .HasMaxLength(200);
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
+
+                    b.Property<DateTime>("RejectionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("RejectedClientApplications");
+                });
+
+            modelBuilder.Entity("Client.Core.Entities.Client.Client", b =>
+                {
+                    b.HasOne("Client.Core.Entities.Client.ClientAddressData", "ClientAddressData")
                         .WithMany()
-                        .HasForeignKey("ClientApplicationFamilyDetailsDataId");
+                        .HasForeignKey("ClientAddressDataId");
+
+                    b.HasOne("Client.Core.Entities.Client.ClientContactData", "ClientContactData")
+                        .WithMany()
+                        .HasForeignKey("ClientContactDataId");
+
+                    b.HasOne("Client.Core.Entities.Client.ClientFamilyDetailsData", "ClientFamilyDetailsData")
+                        .WithMany()
+                        .HasForeignKey("ClientFamilyDetailsDataId");
+                });
+
+            modelBuilder.Entity("Client.Core.Entities.Client.RejectedClientApplication", b =>
+                {
+                    b.HasOne("Client.Core.Entities.Client.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

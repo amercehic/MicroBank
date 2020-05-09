@@ -12,10 +12,12 @@ namespace Client.Core.Models.Dto.Client
         public Guid OfficeId { get; set; }
         public bool Active { get; set; }
         public DateTime SubmittedOnDate { get; set; }
+        public DateTime? ApprovalDateTime { get; set; }
+        public DateTime? ActivationDateTime { get; set; }
+        public string Status { get; set; }
         public ClientAddressDto Address { get; set; }
         public ClientFamilyDetailsDto FamilyDetails { get; set; }
         public ClientContactDto Contact { get; set; }
-        public ClientApplicationDto ClientApplication { get; set; }
 
         public ClientDto()
         {
@@ -31,10 +33,12 @@ namespace Client.Core.Models.Dto.Client
             OfficeId = entity.OfficeId;
             Active = entity.Active;
             SubmittedOnDate = entity.SubmittedOnDate;
+            ApprovalDateTime = entity.ApprovalDateTime;
+            ActivationDateTime = entity.ActivationDateTime;
+            Status = entity.Status;
             Address = entity.ClientAddressData != null ? new ClientAddressDto(entity.ClientAddressData) : null;
             FamilyDetails = entity.ClientFamilyDetailsData != null ? new ClientFamilyDetailsDto(entity.ClientFamilyDetailsData) : null;
             Contact = entity.ClientContactData != null ? new ClientContactDto(entity.ClientContactData) : null;
-            ClientApplication = entity.ClientApplication != null ? new ClientApplicationDto(entity.ClientApplication) : null;
         }
     }
 }

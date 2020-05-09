@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Client.Infrastructure.Migrations
 {
-    public partial class ClientMigration : Migration
+    public partial class InitialClientModel : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -64,17 +64,19 @@ namespace Client.Infrastructure.Migrations
                     IsDeleted = table.Column<bool>(nullable: false),
                     CreatedBy = table.Column<Guid>(nullable: true),
                     UpdatedBy = table.Column<Guid>(nullable: true),
-                    ClientApplicationId = table.Column<Guid>(nullable: false),
                     FirstName = table.Column<string>(maxLength: 100, nullable: false),
                     LastName = table.Column<string>(maxLength: 100, nullable: false),
                     DateOfBirth = table.Column<DateTime>(nullable: false),
                     PersonalId = table.Column<string>(maxLength: 20, nullable: false),
                     OfficeId = table.Column<Guid>(nullable: false),
                     Active = table.Column<bool>(nullable: false),
+                    ActivationDateTime = table.Column<DateTime>(nullable: true),
+                    ApprovalDateTime = table.Column<DateTime>(nullable: true),
                     SubmittedOnDate = table.Column<DateTime>(nullable: false),
                     ClientAddressDataId = table.Column<int>(nullable: true),
                     ClientFamilyDetailsDataId = table.Column<int>(nullable: true),
-                    ClientContactDataId = table.Column<int>(nullable: true)
+                    ClientContactDataId = table.Column<int>(nullable: true),
+                    Status = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -83,12 +85,6 @@ namespace Client.Infrastructure.Migrations
                         name: "FK_Clients_ClientAddressData_ClientAddressDataId",
                         column: x => x.ClientAddressDataId,
                         principalTable: "ClientAddressData",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Clients_ClientApplications_ClientApplicationId",
-                        column: x => x.ClientApplicationId,
-                        principalTable: "ClientApplications",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -105,15 +101,36 @@ namespace Client.Infrastructure.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "RejectedClientApplications",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    CreatedAt = table.Column<DateTime>(nullable: false),
+                    UpdatedAt = table.Column<DateTime>(nullable: true),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: true),
+                    UpdatedBy = table.Column<Guid>(nullable: true),
+                    ClientId = table.Column<Guid>(nullable: false),
+                    RejectionDate = table.Column<DateTime>(nullable: false),
+                    Reason = table.Column<string>(maxLength: 100, nullable: false),
+                    Note = table.Column<string>(maxLength: 200, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RejectedClientApplications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RejectedClientApplications_Clients_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "Clients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Clients_ClientAddressDataId",
                 table: "Clients",
                 column: "ClientAddressDataId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Clients_ClientApplicationId",
-                table: "Clients",
-                column: "ClientApplicationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Clients_ClientContactDataId",
@@ -124,10 +141,18 @@ namespace Client.Infrastructure.Migrations
                 name: "IX_Clients_ClientFamilyDetailsDataId",
                 table: "Clients",
                 column: "ClientFamilyDetailsDataId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RejectedClientApplications_ClientId",
+                table: "RejectedClientApplications",
+                column: "ClientId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "RejectedClientApplications");
+
             migrationBuilder.DropTable(
                 name: "Clients");
 

@@ -1,12 +1,13 @@
 ﻿using Client.Core.Exceptions;
+using Client.Core.Exceptions.Client;
 using MicroBank.Common.ExceptionHandler.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Client.Core.Entities
+namespace Client.Core.Entities.Client
 {
-    public static class ClientApplicationStatus
+    public class ClientStatus
     {
         public static string Pending = "PENDING";
         public static string Approved = "APPROVED";
@@ -16,7 +17,7 @@ namespace Client.Core.Entities
         {
             if (!All.Contains(status))
             {
-                throw new MicroBankException($"Client Application status: '{status}' is not valid", ClientApplicationErrorCodes.ClientApplicationStatusNotValid, System.Net.HttpStatusCode.BadRequest);
+                throw new MicroBankException($"Client Application status: '{status}' is not valid", ClientErrorCodes.ClientApplicationStatusNotValid, System.Net.HttpStatusCode.BadRequest);
             }
             return status;
         }

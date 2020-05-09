@@ -7,5 +7,7 @@ namespace Client.Core.Models.Filters
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public bool IsActive { get; set; }
+        public string Status { get; set; }
+        public string Country { get; set; }
     }
 }

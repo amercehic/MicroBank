@@ -7,10 +7,5 @@ namespace Client.Core.Entities.Account
     {
         public Guid ClientId { get; set; }
         public string AccountType { get; set; }
-
-
-        #region Navigation properties
-        public ClientApplication ClientApplication { get; set; }
-        #endregion
     }
 }

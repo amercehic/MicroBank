@@ -1,14 +1,11 @@
 ﻿using MicroBank.Common.Models;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Client.Core.Entities.Client
 {
     public class Client : BaseEntity<Guid>
     {
-        [Required]
-        public Guid ClientApplicationId { get; set; }
         [Required]
         [StringLength(100)]
         public string FirstName { get; set; }
@@ -24,16 +21,18 @@ namespace Client.Core.Entities.Client
         public Guid OfficeId { get; set; }
         [Required]
         public bool Active { get; set; }
+        public DateTime? ActivationDateTime { get; set; }
+        public DateTime? ApprovalDateTime { get; set; }
         [Required]
         public DateTime SubmittedOnDate { get; set; }
         public ClientAddressData ClientAddressData { get; set; }
         public ClientFamilyDetailsData ClientFamilyDetailsData { get; set; }
         public ClientContactData ClientContactData { get; set; }
+        public string Status { get; set; }
 
         #region NavProp
         //public ICollection<Entities.AccountApplication.AccountApplication> AccountApplications { get; set; }
         //public ICollection<Entities.Account.Account> Accounts { get; set; }
-        public ClientApplication ClientApplication { get; set; }
         #endregion
     }
 

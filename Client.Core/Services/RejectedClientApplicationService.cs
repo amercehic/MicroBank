@@ -39,7 +39,7 @@ namespace Client.Core.Services
         {
             var rejectedClientApplication = await rejectedClientApplicationRepository.FindByAsync(
                 o => o.Id == id,
-                c => c.ClientApplication).ConfigureAwait(false);
+                c => c.Client).ConfigureAwait(false);
 
             if (rejectedClientApplication == null)
             {

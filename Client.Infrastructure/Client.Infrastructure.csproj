@@ -5,19 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\20200505131919_ClientMigration.cs" />
-    <Compile Remove="Migrations\20200505131919_ClientMigration.Designer.cs" />
-    <Compile Remove="Migrations\20200505132330_ClientMigration.cs" />
-    <Compile Remove="Migrations\20200505132330_ClientMigration.Designer.cs" />
-    <Compile Remove="Migrations\20200506102703_AddedRejectedClientApplicationModel.cs" />
-    <Compile Remove="Migrations\20200506102703_AddedRejectedClientApplicationModel.Designer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Integrations\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

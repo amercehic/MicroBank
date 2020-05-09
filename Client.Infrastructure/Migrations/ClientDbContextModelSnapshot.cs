@@ -25,14 +25,17 @@ namespace Client.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("ActivationDateTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("Active")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("ApprovalDateTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("ClientAddressDataId")
                         .HasColumnType("int");
-
-                    b.Property<Guid>("ClientApplicationId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("ClientContactDataId")
                         .HasColumnType("int");
@@ -70,6 +73,9 @@ namespace Client.Infrastructure.Migrations
                         .HasColumnType("nvarchar(20)")
                         .HasMaxLength(20);
 
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("SubmittedOnDate")
                         .HasColumnType("datetime2");
 
@@ -82,8 +88,6 @@ namespace Client.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClientAddressDataId");
-
-                    b.HasIndex("ClientApplicationId");
 
                     b.HasIndex("ClientContactDataId");
 
@@ -177,7 +181,7 @@ namespace Client.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ClientApplicationId")
+                    b.Property<Guid>("ClientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -209,160 +213,9 @@ namespace Client.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientApplicationId");
+                    b.HasIndex("ClientId");
 
                     b.ToTable("RejectedClientApplications");
-                });
-
-            modelBuilder.Entity("Client.Core.Entities.ClientApplication", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("ClientApplicationAddressDataId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ClientApplicationContactDataId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ClientApplicationFamilyDetailsDataId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(100)")
-                        .HasMaxLength(100);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(100)")
-                        .HasMaxLength(100);
-
-                    b.Property<Guid>("OfficeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PersonalId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(20)")
-                        .HasMaxLength(20);
-
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
-
-                    b.Property<DateTime>("SubmittedOnDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientApplicationAddressDataId");
-
-                    b.HasIndex("ClientApplicationContactDataId");
-
-                    b.HasIndex("ClientApplicationFamilyDetailsDataId");
-
-                    b.ToTable("ClientApplications");
-                });
-
-            modelBuilder.Entity("Client.Core.Entities.ClientApplicationAddressData", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("AddressLine")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(100)")
-                        .HasMaxLength(100);
-
-                    b.Property<string>("Country")
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
-
-                    b.Property<string>("CountryCode")
-                        .HasColumnType("nvarchar(10)")
-                        .HasMaxLength(10);
-
-                    b.Property<string>("Province")
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
-
-                    b.Property<string>("Street")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(100)")
-                        .HasMaxLength(100);
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ClientApplicationAddressData");
-                });
-
-            modelBuilder.Entity("Client.Core.Entities.ClientApplicationContactData", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("EmailAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ClientApplicationContactData");
-                });
-
-            modelBuilder.Entity("Client.Core.Entities.ClientApplicationFamilyDetailsData", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("MaritalStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
-
-                    b.Property<int>("NumberOfChildren")
-                        .HasColumnType("int");
-
-                    b.Property<int>("NumberOfDependents")
-                        .HasColumnType("int");
-
-                    b.Property<int>("NumberOfMembers")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ClientApplicationFamilyDetailsData");
                 });
 
             modelBuilder.Entity("Client.Core.Entities.Client.Client", b =>
@@ -370,12 +223,6 @@ namespace Client.Infrastructure.Migrations
                     b.HasOne("Client.Core.Entities.Client.ClientAddressData", "ClientAddressData")
                         .WithMany()
                         .HasForeignKey("ClientAddressDataId");
-
-                    b.HasOne("Client.Core.Entities.ClientApplication", "ClientApplication")
-                        .WithMany()
-                        .HasForeignKey("ClientApplicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.HasOne("Client.Core.Entities.Client.ClientContactData", "ClientContactData")
                         .WithMany()
@@ -388,26 +235,11 @@ namespace Client.Infrastructure.Migrations
 
             modelBuilder.Entity("Client.Core.Entities.Client.RejectedClientApplication", b =>
                 {
-                    b.HasOne("Client.Core.Entities.ClientApplication", "ClientApplication")
+                    b.HasOne("Client.Core.Entities.Client.Client", "Client")
                         .WithMany()
-                        .HasForeignKey("ClientApplicationId")
+                        .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Client.Core.Entities.ClientApplication", b =>
-                {
-                    b.HasOne("Client.Core.Entities.ClientApplicationAddressData", "ClientApplicationAddressData")
-                        .WithMany()
-                        .HasForeignKey("ClientApplicationAddressDataId");
-
-                    b.HasOne("Client.Core.Entities.ClientApplicationContactData", "ClientApplicationContactData")
-                        .WithMany()
-                        .HasForeignKey("ClientApplicationContactDataId");
-
-                    b.HasOne("Client.Core.Entities.ClientApplicationFamilyDetailsData", "ClientApplicationFamilyDetailsData")
-                        .WithMany()
-                        .HasForeignKey("ClientApplicationFamilyDetailsDataId");
                 });
 #pragma warning restore 612, 618
         }
