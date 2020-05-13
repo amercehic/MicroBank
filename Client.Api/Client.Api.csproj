@@ -31,6 +31,8 @@
     <ProjectReference Include="..\Client.Core\Client.Core.csproj" />
     <ProjectReference Include="..\Client.Infrastructure\Client.Infrastructure.csproj" />
     <ProjectReference Include="..\MicroBank.Common\MicroBank.Common.csproj" />
+    <ProjectReference Include="..\MicroBank.EventBusServiceBus\MicroBank.EventBusServiceBus.csproj" />
+    <ProjectReference Include="..\MicroBank.EventBus\MicroBank.EventBus.csproj" />
   </ItemGroup>
 
 

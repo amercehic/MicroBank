@@ -1,4 +1,7 @@
+using Client.Core.Integrations.EventBus.EventHandlers;
+using Client.Core.Integrations.EventBus.Events;
 using Client.Core.Integrations.Services.OfficeApi;
+using Client.Core.Integrations.Services.OrganisationApi;
 using Client.Core.Interfaces.Repository;
 using Client.Core.Interfaces.Service;
 using Client.Core.Services;
@@ -9,6 +12,8 @@ using MediatR;
 using MicroBank.Common.ExceptionHandler;
 using MicroBank.Common.Identity;
 using MicroBank.Common.Repository;
+using MicroBank.EventBus.Bus;
+using MicroBank.EventBusServiceBus.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -58,12 +63,25 @@ namespace Client.Api
             services.AddScoped(typeof(IEfRepository<,>), typeof(EfRepository<,>));
             services.AddTransient<HttpClientExceptionHandler>(); // handle PMToolsException from another service
             services.AddHeaderPropagation(s => s.Headers.Add("Authorization")); // forward authorizatin header to api's
+
+            //Domain Bus
+            services.AddSingleton<IEventBus, RabbitMQBus>(sp =>
+            {
+                var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
+                return new RabbitMQBus(sp.GetService<IMediator>(), scopeFactory);
+            });
+
+            //Subscriptions
+            services.AddTransient<UpdateStaffMemberEventHandler>();
+            //Domain Events
+            services.AddTransient<IEventHandler<UpdateStaffMemberCreatedEvent>, UpdateStaffMemberEventHandler>();
+
             services.AddMediatR(typeof(Startup));
             services.AddScoped<DbContext, ClientDbContext>();
 
-            services.AddHttpClient<IOfficeApiService, OfficeApiService>("OfficeApiService", c =>
+            services.AddHttpClient<IOrganisationApiService, OrganisationApiService>("OrganisationApiService", c =>
             {
-                c.BaseAddress = new Uri(Configuration["ServiceUrls:OfficeApi"]);
+                c.BaseAddress = new Uri(Configuration["ServiceUrls:OrganisationApi"]);
             }).AddHeaderPropagation().AddHttpMessageHandler<HttpClientExceptionHandler>();
 
             services.AddScoped(typeof(IRejectedClientApplicationService), typeof(RejectedClientApplicationService));
@@ -98,6 +116,13 @@ namespace Client.Api
             {
                 endpoints.MapControllers();
             });
+            ConfigureEventBus(app);
+        }
+
+        private void ConfigureEventBus(IApplicationBuilder app)
+        {
+            var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
+            eventBus.Subscribe<UpdateStaffMemberCreatedEvent, UpdateStaffMemberEventHandler>();
         }
     }
 }

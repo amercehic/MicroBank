@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Client.Core\Client.Core.csproj" />
+    <ProjectReference Include="..\MicroBank.EventBus\MicroBank.EventBus.csproj" />
   </ItemGroup>
 
 </Project>

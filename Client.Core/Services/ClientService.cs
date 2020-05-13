@@ -1,16 +1,19 @@
-﻿using Client.Core.Entities;
-using Client.Core.Entities.Client;
+﻿using Client.Core.Entities.Client;
+using Client.Core.Entities.Staff;
 using Client.Core.Exceptions;
 using Client.Core.Exceptions.Client;
 using Client.Core.Integrations.Services.OfficeApi;
 using Client.Core.Integrations.Services.OfficeApi.Exceptions;
+using Client.Core.Integrations.Services.OrganisationApi.Models;
 using Client.Core.Interfaces.Service;
 using Client.Core.LogMessages;
 using Client.Core.Models.BindingModel;
 using Client.Core.Models.BindingModel.ClientApplication;
 using Client.Core.Models.Dto.Client;
 using Client.Core.Models.Dto.ClientApplication;
+using Client.Core.Models.Filters;
 using MicroBank.Common.Identity;
+using MicroBank.Common.Models;
 using MicroBank.Common.Repository;
 using Microsoft.Extensions.Logging;
 using System;
@@ -23,21 +26,24 @@ namespace Client.Core.Services
         private readonly ClaimsPrincipalUtil _principal;
         private readonly IEfRepository<Entities.Client.Client, Guid> _clientRepository;
         private readonly IEfRepository<Entities.Client.RejectedClientApplication, Guid> _rejectedClientApplicationRepository;
+        private readonly IEfRepository<Entities.Staff.StaffMember, Guid> _efStaffMemberRepository;
         private readonly ILogger<ClientService> _logger;
-        private readonly IOfficeApiService _officeApiService;
+        private readonly IOrganisationApiService _organisationApiService;
 
         public ClientService(
             ClaimsPrincipalUtil principal,
             IEfRepository<Entities.Client.Client, Guid> clientRepository,
             IEfRepository<Entities.Client.RejectedClientApplication, Guid> rejectedClientApplicationRepository,
             ILogger<ClientService> logger,
-            IOfficeApiService officeApiService)
+            IOrganisationApiService organisationApiService,
+            IEfRepository<Entities.Staff.StaffMember, Guid> efStaffMemberRepository)
         {
             _principal = principal;
             _clientRepository = clientRepository;
             _rejectedClientApplicationRepository = rejectedClientApplicationRepository;
             _logger = logger;
-            _officeApiService = officeApiService;
+            _organisationApiService = organisationApiService;
+            _efStaffMemberRepository = efStaffMemberRepository;
         }
 
         public async Task<ClientDto> ApproveClientApplicationAsync(Guid id)
@@ -62,13 +68,12 @@ namespace Client.Core.Services
 
         public async Task<ClientDto> CreateAsync(ClientApplicationCreateBindingModel model)
         {
-            var office = await _officeApiService.GetByIdAsync(model.OfficeId).ConfigureAwait(false);
+            var office = await _organisationApiService.GetOfficeByIdAsync(model.OfficeId).ConfigureAwait(false);
 
             if (office == null)
             {
                 throw new OfficeNotFoundException(id: model.OfficeId.ToString());
             }
-
 
             Entities.Client.Client client = new Entities.Client.Client()
             {
@@ -210,6 +215,54 @@ namespace Client.Core.Services
 
             await _clientRepository.UpdateAsync(client).ConfigureAwait(false);
             return await GetByIdAsync(id).ConfigureAwait(false);
+        }
+
+        public async Task<ClientDto> AssignStaffMemberToClientAsync(Guid id, AssignStaffMemberBindingModel model)
+        {
+            var client = await _clientRepository.FindByAsync(
+                o => o.Id == id && o.Status == ClientStatus.Approved && o.Active == true,
+                c => c.ClientContactData,
+                f => f.ClientFamilyDetailsData,
+                a => a.ClientAddressData).ConfigureAwait(false); 
+            
+            if (client == null)
+            {
+                throw new ClientNotFoundException(id: id.ToString());
+            }
+
+            var staffMember = await CreateStaffMemberIfNotExist(model.StaffMemberId).ConfigureAwait(false);
+            client.StaffMemberId = staffMember.Id;
+
+            await _clientRepository.UpdateAsync(client).ConfigureAwait(false);
+            return await GetByIdAsync(client.Id).ConfigureAwait(false);
+        }
+
+        public Task<QueryResultDto<ClientDto, Guid>> GetByFilterAsync(ClientFilter filter)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<StaffMember> CreateStaffMemberIfNotExist(Guid id)
+        {
+            var existingMember = await _efStaffMemberRepository.GetByIdAsync(id).ConfigureAwait(true);
+            if (existingMember != null)
+            {
+                return existingMember;
+            }
+
+            var newMember = await _organisationApiService.GetStaffMemberByIdAsync(id).ConfigureAwait(true);
+
+            var entity = new StaffMember()
+            {
+                Id = newMember.Id,
+                OfficeId = newMember.Office.Id,
+                FirstName = newMember.FirstName,
+                LastName = newMember.LastName,
+                IsLoanOfficer = newMember.IsLoanOfficer,
+                IsActive = newMember.IsActive
+            };
+
+            return await _efStaffMemberRepository.AddAsync(entity).ConfigureAwait(true);
         }
     }
 }

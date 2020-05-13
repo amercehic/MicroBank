@@ -52,6 +52,9 @@ namespace Client.Infrastructure.Migrations
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("DocumentId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(100)")
@@ -73,6 +76,9 @@ namespace Client.Infrastructure.Migrations
                         .HasColumnType("nvarchar(20)")
                         .HasMaxLength(20);
 
+                    b.Property<Guid?>("StaffMemberId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
 
@@ -92,6 +98,10 @@ namespace Client.Infrastructure.Migrations
                     b.HasIndex("ClientContactDataId");
 
                     b.HasIndex("ClientFamilyDetailsDataId");
+
+                    b.HasIndex("DocumentId");
+
+                    b.HasIndex("StaffMemberId");
 
                     b.ToTable("Clients");
                 });
@@ -175,6 +185,41 @@ namespace Client.Infrastructure.Migrations
                     b.ToTable("ClientFamilyDetailsData");
                 });
 
+            modelBuilder.Entity("Client.Core.Entities.Client.Document", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Document");
+                });
+
             modelBuilder.Entity("Client.Core.Entities.Client.RejectedClientApplication", b =>
                 {
                     b.Property<Guid>("Id")
@@ -218,6 +263,47 @@ namespace Client.Infrastructure.Migrations
                     b.ToTable("RejectedClientApplications");
                 });
 
+            modelBuilder.Entity("Client.Core.Entities.Staff.StaffMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsLoanOfficer")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("OfficeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StaffMembers");
+                });
+
             modelBuilder.Entity("Client.Core.Entities.Client.Client", b =>
                 {
                     b.HasOne("Client.Core.Entities.Client.ClientAddressData", "ClientAddressData")
@@ -231,6 +317,14 @@ namespace Client.Infrastructure.Migrations
                     b.HasOne("Client.Core.Entities.Client.ClientFamilyDetailsData", "ClientFamilyDetailsData")
                         .WithMany()
                         .HasForeignKey("ClientFamilyDetailsDataId");
+
+                    b.HasOne("Client.Core.Entities.Client.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId");
+
+                    b.HasOne("Client.Core.Entities.Staff.StaffMember", "StaffMember")
+                        .WithMany()
+                        .HasForeignKey("StaffMemberId");
                 });
 
             modelBuilder.Entity("Client.Core.Entities.Client.RejectedClientApplication", b =>

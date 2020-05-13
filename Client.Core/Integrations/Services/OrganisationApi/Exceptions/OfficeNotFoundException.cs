@@ -6,7 +6,7 @@ namespace Client.Core.Integrations.Services.OfficeApi.Exceptions
     public class OfficeNotFoundException : MicroBankException
     {
         public OfficeNotFoundException(string id)
-            : base($"Office with id {id} was not found.", OfficeErrorCodes.OfficeNotFound, System.Net.HttpStatusCode.NotFound)
+            : base($"Office with id {id} was not found.", OrganisationErrorCodes.OfficeNotFound, System.Net.HttpStatusCode.NotFound)
         {
         }
     }

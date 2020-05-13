@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Client.Infrastructure.Migrations
 {
-    public partial class InitialClientModel : Migration
+    public partial class ClientModels : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -55,6 +55,46 @@ namespace Client.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Document",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    CreatedAt = table.Column<DateTime>(nullable: false),
+                    UpdatedAt = table.Column<DateTime>(nullable: true),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: true),
+                    UpdatedBy = table.Column<Guid>(nullable: true),
+                    Url = table.Column<string>(nullable: true),
+                    Title = table.Column<string>(nullable: true),
+                    Description = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Document", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StaffMembers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    CreatedAt = table.Column<DateTime>(nullable: false),
+                    UpdatedAt = table.Column<DateTime>(nullable: true),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    CreatedBy = table.Column<Guid>(nullable: true),
+                    UpdatedBy = table.Column<Guid>(nullable: true),
+                    OfficeId = table.Column<Guid>(nullable: false),
+                    FirstName = table.Column<string>(nullable: true),
+                    LastName = table.Column<string>(nullable: true),
+                    IsLoanOfficer = table.Column<bool>(nullable: false),
+                    IsActive = table.Column<bool>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StaffMembers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Clients",
                 columns: table => new
                 {
@@ -76,6 +116,8 @@ namespace Client.Infrastructure.Migrations
                     ClientAddressDataId = table.Column<int>(nullable: true),
                     ClientFamilyDetailsDataId = table.Column<int>(nullable: true),
                     ClientContactDataId = table.Column<int>(nullable: true),
+                    DocumentId = table.Column<Guid>(nullable: true),
+                    StaffMemberId = table.Column<Guid>(nullable: true),
                     Status = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -97,6 +139,18 @@ namespace Client.Infrastructure.Migrations
                         name: "FK_Clients_ClientFamilyDetailsData_ClientFamilyDetailsDataId",
                         column: x => x.ClientFamilyDetailsDataId,
                         principalTable: "ClientFamilyDetailsData",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Clients_Document_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "Document",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Clients_StaffMembers_StaffMemberId",
+                        column: x => x.StaffMemberId,
+                        principalTable: "StaffMembers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -143,6 +197,16 @@ namespace Client.Infrastructure.Migrations
                 column: "ClientFamilyDetailsDataId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Clients_DocumentId",
+                table: "Clients",
+                column: "DocumentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Clients_StaffMemberId",
+                table: "Clients",
+                column: "StaffMemberId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RejectedClientApplications_ClientId",
                 table: "RejectedClientApplications",
                 column: "ClientId");
@@ -164,6 +228,12 @@ namespace Client.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "ClientFamilyDetailsData");
+
+            migrationBuilder.DropTable(
+                name: "Document");
+
+            migrationBuilder.DropTable(
+                name: "StaffMembers");
         }
     }
 }
