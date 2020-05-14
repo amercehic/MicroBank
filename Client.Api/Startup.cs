@@ -87,6 +87,7 @@ namespace Client.Api
             services.AddScoped(typeof(IRejectedClientApplicationService), typeof(RejectedClientApplicationService));
             services.AddScoped(typeof(IClientRepository), typeof(ClientRepository));
             services.AddScoped(typeof(IClientService), typeof(ClientService));
+            services.AddScoped(typeof(IDocumentService), typeof(DocumentService));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

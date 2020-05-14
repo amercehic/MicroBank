@@ -1,6 +1,7 @@
 ﻿using Client.Core.Entities.Staff;
 using MicroBank.Common.Models;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection.Metadata;
 
@@ -30,13 +31,13 @@ namespace Client.Core.Entities.Client
         public ClientAddressData ClientAddressData { get; set; }
         public ClientFamilyDetailsData ClientFamilyDetailsData { get; set; }
         public ClientContactData ClientContactData { get; set; }
-        public Core.Entities.Client.Document Document { get; set; }
         public Guid? StaffMemberId { get; set; }
         public string Status { get; set; }
 
         #region NavProp
         //public ICollection<Entities.AccountApplication.AccountApplication> AccountApplications { get; set; }
         //public ICollection<Entities.Account.Account> Accounts { get; set; }
+        public ICollection<Document> Documents { get; set; }
         public StaffMember StaffMember { get; set; }
         #endregion
     }
