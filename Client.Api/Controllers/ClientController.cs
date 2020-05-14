@@ -1,4 +1,6 @@
-﻿using Client.Core.Interfaces.Service;
+﻿using Client.Core.Integrations.Services.OrganisationApi.Models;
+using Client.Core.Interfaces.Service;
+using Client.Core.Models.BindingModel;
 using Client.Core.Models.BindingModel.ClientApplication;
 using Client.Core.Models.Dto.Client;
 using Client.Core.Models.Dto.ClientApplication;
@@ -33,6 +35,12 @@ namespace Client.Api.Controllers
             return await clientService.GetByFilterAsync(model).ConfigureAwait(false);
         }
 
+        [HttpPost("GenerateClientApplication")]
+        public async Task<ClientDto> GenerateClientApplication(ClientApplicationCreateBindingModel model)
+        {
+            return await clientService.CreateAsync(model).ConfigureAwait(false);
+        }
+
         [HttpPatch("ApproveClientApplication/{id}")]
         public async Task<ClientDto> ApproveClientApplication(Guid id)
         {
@@ -43,6 +51,18 @@ namespace Client.Api.Controllers
         public async Task<RejectedClientApplicationDto> RejectClientApplication(Guid id, RejectedClientApplicationCreateBindingModel model)
         {
             return await clientService.RejectClientApplicationAsync(id, model).ConfigureAwait(false);
+        }
+
+        [HttpPatch("ActivateClient/{id}")]
+        public async Task<ClientDto> ActivateClient(Guid id)
+        {
+            return await clientService.ActivateClientAsync(id).ConfigureAwait(false);
+        }
+
+        [HttpPatch("AssignStaffMember/{id}")]
+        public async Task<ClientDto> AssignStaffMember(Guid id, AssignStaffMemberBindingModel model)
+        {
+            return await clientService.AssignStaffMemberToClientAsync(id, model).ConfigureAwait(false);
         }
 
     }

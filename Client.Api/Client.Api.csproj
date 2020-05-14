@@ -10,6 +10,7 @@
     <PackageReference Include="MediatR" Version="8.0.1" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" Version="3.1.3" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -30,6 +31,8 @@
     <ProjectReference Include="..\Client.Core\Client.Core.csproj" />
     <ProjectReference Include="..\Client.Infrastructure\Client.Infrastructure.csproj" />
     <ProjectReference Include="..\MicroBank.Common\MicroBank.Common.csproj" />
+    <ProjectReference Include="..\MicroBank.EventBusServiceBus\MicroBank.EventBusServiceBus.csproj" />
+    <ProjectReference Include="..\MicroBank.EventBus\MicroBank.EventBus.csproj" />
   </ItemGroup>
 
 

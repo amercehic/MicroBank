@@ -1,7 +1,10 @@
-﻿using Client.Core.Entities;
-using Client.Core.Entities.Client;
+﻿using Client.Core.Entities.Client;
+using Client.Core.Entities.Staff;
 using Client.Core.Exceptions;
 using Client.Core.Exceptions.Client;
+using Client.Core.Integrations.Services.OfficeApi;
+using Client.Core.Integrations.Services.OfficeApi.Exceptions;
+using Client.Core.Integrations.Services.OrganisationApi.Models;
 using Client.Core.Interfaces.Service;
 using Client.Core.LogMessages;
 using Client.Core.Models.BindingModel;
@@ -9,124 +12,140 @@ using Client.Core.Models.BindingModel.ClientApplication;
 using Client.Core.Models.Dto.Client;
 using Client.Core.Models.Dto.ClientApplication;
 using Client.Core.Models.Filters;
-using Client.Core.Specifications;
 using MicroBank.Common.Identity;
 using MicroBank.Common.Models;
 using MicroBank.Common.Repository;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Client.Core.Services
 {
     public class ClientService : IClientService
     {
-        private readonly ClaimsPrincipalUtil principal;
-        private readonly IEfRepository<Entities.Client.Client, Guid> clientRepository;
-        private readonly IEfRepository<Entities.ClientApplication, Guid> clientApplicationRepository;
-        private readonly IEfRepository<Entities.Client.RejectedClientApplication, Guid> rejectedClientApplicationRepository;
-        private readonly ILogger<ClientService> logger;
+        private readonly ClaimsPrincipalUtil _principal;
+        private readonly IEfRepository<Entities.Client.Client, Guid> _clientRepository;
+        private readonly IEfRepository<Entities.Client.RejectedClientApplication, Guid> _rejectedClientApplicationRepository;
+        private readonly IEfRepository<Entities.Staff.StaffMember, Guid> _efStaffMemberRepository;
+        private readonly ILogger<ClientService> _logger;
+        private readonly IOrganisationApiService _organisationApiService;
 
         public ClientService(
             ClaimsPrincipalUtil principal,
             IEfRepository<Entities.Client.Client, Guid> clientRepository,
-            IEfRepository<Entities.ClientApplication, Guid> clientApplicationRepository,
             IEfRepository<Entities.Client.RejectedClientApplication, Guid> rejectedClientApplicationRepository,
-            ILogger<ClientService> logger)
+            ILogger<ClientService> logger,
+            IOrganisationApiService organisationApiService,
+            IEfRepository<Entities.Staff.StaffMember, Guid> efStaffMemberRepository)
         {
-            this.principal = principal;
-            this.clientRepository = clientRepository;
-            this.clientApplicationRepository = clientApplicationRepository;
-            this.rejectedClientApplicationRepository = rejectedClientApplicationRepository;
-            this.logger = logger;
+            _principal = principal;
+            _clientRepository = clientRepository;
+            _rejectedClientApplicationRepository = rejectedClientApplicationRepository;
+            _logger = logger;
+            _organisationApiService = organisationApiService;
+            _efStaffMemberRepository = efStaffMemberRepository;
         }
 
         public async Task<ClientDto> ApproveClientApplicationAsync(Guid id)
         {
-            ClientDto clientDto = new ClientDto();
-            clientDto = await CreateAsync(id).ConfigureAwait(false);
-            return clientDto;
+            var client = await _clientRepository.FindByAsync(
+                o => o.Id == id && o.Status == ClientStatus.Pending,
+                c => c.ClientContactData,
+                f => f.ClientFamilyDetailsData,
+                a => a.ClientAddressData).ConfigureAwait(false);
+
+            if (client == null)
+            {
+                throw new ClientNotFoundException(id: id.ToString());
+            }
+
+            client.Status = ClientStatus.Approved;
+            client.ApprovalDateTime = DateTime.Now;
+
+            await _clientRepository.UpdateAsync(client).ConfigureAwait(false);
+            return await GetByIdAsync(id).ConfigureAwait(false);
         }
 
-        public async Task<ClientDto> CreateAsync(Guid id)
+        public async Task<ClientDto> CreateAsync(ClientApplicationCreateBindingModel model)
         {
-            //logger.LogInformation(ClientLogMessages.PerformCreatingMessage);
+            var office = await _organisationApiService.GetOfficeByIdAsync(model.OfficeId).ConfigureAwait(false);
 
-            var clientApplication = await clientApplicationRepository.FindByAsync(
-                o => o.Id == id, 
-                c => c.ClientApplicationContactData,
-                f => f.ClientApplicationFamilyDetailsData,
-                a => a.ClientApplicationAddressData).ConfigureAwait(false);
+            if (office == null)
+            {
+                throw new OfficeNotFoundException(id: model.OfficeId.ToString());
+            }
+
+            Entities.Client.Client client = new Entities.Client.Client()
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                DateOfBirth = model.DateOfBirth,
+                PersonalId = model.PersonalId,
+                OfficeId = model.OfficeId,
+                Active = false,
+                SubmittedOnDate = DateTime.Now,
+                ClientAddressData = new ClientAddressData
+                {
+                    AddressLine = model.AddressLine,
+                    Country = model.Country,
+                    Province = model.Province,
+                    Street = model.Street,
+                    CountryCode = model.CountryCode
+                },
+                ClientFamilyDetailsData = new ClientFamilyDetailsData
+                {
+                    MaritalStatus = model.MaritalStatus,
+                    NumberOfDependents = model.NumberOfDependents,
+                    NumberOfMembers = model.NumberOfMembers,
+                    NumberOfChildren = model.NumberOfChildren
+                },
+                ClientContactData = new ClientContactData
+                {
+                    EmailAddress = model.EmailAddress,
+                    PhoneNumber = model.PhoneNumber
+                },
+                CreatedBy = _principal.UserId,
+                Status = ClientStatus.Pending
+            };
+
+            var returned = await _clientRepository.AddAsync(client).ConfigureAwait(false);
+            _logger.LogInformation(ClientLogMessages.SuccessCreatingMessage, returned.Id);
+
+            return new ClientDto(returned);
+        }
+
+        public async Task<RejectedClientApplicationDto> RejectClientApplicationAsync(Guid id, RejectedClientApplicationCreateBindingModel model)
+        {
+            var clientApplication = await _clientRepository.FindByAsync(
+                o => o.Id == id,
+                c => c.ClientContactData,
+                f => f.ClientFamilyDetailsData,
+                a => a.ClientAddressData).ConfigureAwait(false);
 
             if (clientApplication == null)
             {
                 throw new ClientApplicationNotFoundException(id: id.ToString());
             }
 
-            Entities.Client.Client client = new Entities.Client.Client()
+            RejectedClientApplication entity = new RejectedClientApplication()
             {
-                ClientApplicationId = id,
-                FirstName = clientApplication.FirstName,
-                LastName = clientApplication.LastName,
-                DateOfBirth = clientApplication.DateOfBirth,
-                PersonalId = clientApplication.PersonalId,
-                OfficeId = clientApplication.OfficeId,
-                Active = false,
-                SubmittedOnDate = DateTime.Now,
-                ClientAddressData = new ClientAddressData
-                {
-                    AddressLine = clientApplication.ClientApplicationAddressData.AddressLine,
-                    Country = clientApplication.ClientApplicationAddressData.Country,
-                    Province = clientApplication.ClientApplicationAddressData.Province,
-                    Street = clientApplication.ClientApplicationAddressData.Street,
-                    CountryCode = clientApplication.ClientApplicationAddressData.CountryCode
-                },
-                ClientFamilyDetailsData = new ClientFamilyDetailsData
-                {
-                    MaritalStatus = clientApplication.ClientApplicationFamilyDetailsData.MaritalStatus,
-                    NumberOfDependents = clientApplication.ClientApplicationFamilyDetailsData.NumberOfDependents,
-                    NumberOfMembers = clientApplication.ClientApplicationFamilyDetailsData.NumberOfMembers,
-                    NumberOfChildren = clientApplication.ClientApplicationFamilyDetailsData.NumberOfChildren
-                },
-                ClientContactData = new ClientContactData
-                {
-                    EmailAddress = clientApplication.ClientApplicationContactData.EmailAddress,
-                    PhoneNumber = clientApplication.ClientApplicationContactData.PhoneNumber
-                },
-                CreatedBy = principal.UserId
+                ClientId = id,
+                Reason = model.Reason,
+                Note = model.Note
             };
 
-            var returned = await clientRepository.AddAsync(client).ConfigureAwait(false);
-            logger.LogInformation(ClientLogMessages.SuccessCreatingMessage, returned.Id);
+            clientApplication.Status = ClientStatus.Declined;
+            await _clientRepository.UpdateAsync(clientApplication).ConfigureAwait(false);
 
-            clientApplication.Status = ClientApplicationStatus.Approved;
-            await clientApplicationRepository.UpdateAsync(clientApplication).ConfigureAwait(false);
-
-            return new ClientDto(returned);
-        }
-
-        public async Task<QueryResultDto<ClientDto, Guid>> GetByFilterAsync(ClientFilter filter)
-        {
-            var spec = new ClientFilterspecifications(filter);
-            (IEnumerable<Entities.Client.Client> list, int totalCount) = await clientRepository.ListAsync(spec).ConfigureAwait(false);
-
-            return new QueryResultDto<ClientDto, Guid>()
-            {
-                Items = list?.Select(s => new ClientDto(s)),
-                TotalCount = totalCount
-            };
+            return new RejectedClientApplicationDto(await _rejectedClientApplicationRepository.AddAsync(entity).ConfigureAwait(false));
         }
 
         public async Task<ClientDto> GetByIdAsync(Guid id)
         {
-            logger.LogInformation(ClientLogMessages.PerformGetByIdMessage, id);
-            var entity = await clientRepository.GetByIdAsync(
-                id,
-                c => c.ClientContactData,
-                f => f.ClientFamilyDetailsData,
-                a => a.ClientAddressData).ConfigureAwait(false);
+            var entity = await _clientRepository.GetByIdAsync(id, 
+                s => s.ClientAddressData, 
+                s => s.ClientContactData, 
+                s => s.ClientFamilyDetailsData).ConfigureAwait(false);
 
             if (entity == null)
             {
@@ -136,35 +155,114 @@ namespace Client.Core.Services
             return new ClientDto(entity);
         }
 
-        public async Task<RejectedClientApplicationDto> RejectClientApplicationAsync(Guid id, RejectedClientApplicationCreateBindingModel model)
+        public async Task<ClientDto> GenerateClientApplicationAsync(ClientApplicationCreateBindingModel model)
         {
-            var clientApplication = await clientApplicationRepository.FindByAsync(
-                o => o.Id == id,
-                c => c.ClientApplicationContactData,
-                f => f.ClientApplicationFamilyDetailsData,
-                a => a.ClientApplicationAddressData).ConfigureAwait(false);
+            //_logger.LogInformation(ClientApplicationLogMessages.PerformCreatingMessage, model);
 
-            if (clientApplication == null)
+            Core.Entities.Client.Client clientApplication = new Core.Entities.Client.Client()
             {
-                throw new ClientApplicationNotFoundException(id: id.ToString());
-            }
-
-            RejectedClientApplication entity = new RejectedClientApplication()
-            {
-                ClientApplicationId = id,
-                Reason = model.Reason,
-                Note = model.Note
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                DateOfBirth = model.DateOfBirth,
+                PersonalId = model.PersonalId,
+                OfficeId = model.OfficeId,
+                Active = model.Active,
+                SubmittedOnDate = DateTime.Now,
+                ClientAddressData = new ClientAddressData
+                {
+                    AddressLine = model.AddressLine,
+                    Country = model.Country,
+                    Province = model.Province,
+                    Street = model.Street,
+                    CountryCode = model.CountryCode
+                },
+                ClientFamilyDetailsData = new ClientFamilyDetailsData
+                {
+                    MaritalStatus = model.MaritalStatus,
+                    NumberOfDependents = model.NumberOfDependents,
+                    NumberOfMembers = model.NumberOfMembers,
+                    NumberOfChildren = model.NumberOfChildren
+                },
+                ClientContactData = new ClientContactData
+                {
+                    EmailAddress = model.EmailAddress,
+                    PhoneNumber = model.PhoneNumber
+                },
+                Status = ClientStatus.Pending,
+                CreatedBy = _principal.UserId
             };
+            var returned = await _clientRepository.AddAsync(clientApplication).ConfigureAwait(false);
+            //_logger.LogInformation(ClientApplicationLogMessages.SuccessCreatingMessage, returned.Id);
 
-            clientApplication.Status = ClientApplicationStatus.Declined;
-            await clientApplicationRepository.UpdateAsync(clientApplication).ConfigureAwait(false);
-
-            return new RejectedClientApplicationDto(await rejectedClientApplicationRepository.AddAsync(entity).ConfigureAwait(false));
+            return new ClientDto(returned);
         }
 
-        public Task<ClientDto> UpdateAsync(Guid id, ClientPatchBindingModel model)
+        public async Task<ClientDto> ActivateClientAsync(Guid id)
+        {
+            var client = await _clientRepository.FindByAsync(
+                o => o.Id == id && o.Status == ClientStatus.Approved,
+                c => c.ClientContactData,
+                f => f.ClientFamilyDetailsData,
+                a => a.ClientAddressData).ConfigureAwait(false);
+
+            if (client == null)
+            {
+                throw new ClientNotFoundException(id: id.ToString());
+            }
+
+            client.Active = true;
+            client.ActivationDateTime = DateTime.Now;
+
+            await _clientRepository.UpdateAsync(client).ConfigureAwait(false);
+            return await GetByIdAsync(id).ConfigureAwait(false);
+        }
+
+        public async Task<ClientDto> AssignStaffMemberToClientAsync(Guid id, AssignStaffMemberBindingModel model)
+        {
+            var client = await _clientRepository.FindByAsync(
+                o => o.Id == id && o.Status == ClientStatus.Approved && o.Active == true,
+                c => c.ClientContactData,
+                f => f.ClientFamilyDetailsData,
+                a => a.ClientAddressData).ConfigureAwait(false); 
+            
+            if (client == null)
+            {
+                throw new ClientNotFoundException(id: id.ToString());
+            }
+
+            var staffMember = await CreateStaffMemberIfNotExist(model.StaffMemberId).ConfigureAwait(false);
+            client.StaffMemberId = staffMember.Id;
+
+            await _clientRepository.UpdateAsync(client).ConfigureAwait(false);
+            return await GetByIdAsync(client.Id).ConfigureAwait(false);
+        }
+
+        public Task<QueryResultDto<ClientDto, Guid>> GetByFilterAsync(ClientFilter filter)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<StaffMember> CreateStaffMemberIfNotExist(Guid id)
+        {
+            var existingMember = await _efStaffMemberRepository.GetByIdAsync(id).ConfigureAwait(true);
+            if (existingMember != null)
+            {
+                return existingMember;
+            }
+
+            var newMember = await _organisationApiService.GetStaffMemberByIdAsync(id).ConfigureAwait(true);
+
+            var entity = new StaffMember()
+            {
+                Id = newMember.Id,
+                OfficeId = newMember.Office.Id,
+                FirstName = newMember.FirstName,
+                LastName = newMember.LastName,
+                IsLoanOfficer = newMember.IsLoanOfficer,
+                IsActive = newMember.IsActive
+            };
+
+            return await _efStaffMemberRepository.AddAsync(entity).ConfigureAwait(true);
         }
     }
 }

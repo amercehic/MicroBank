@@ -7,7 +7,7 @@ namespace Client.Core.Entities.Client
     public class RejectedClientApplication : BaseEntity<Guid>
     {
         [Required]
-        public Guid ClientApplicationId { get; set; }
+        public Guid ClientId { get; set; }
         public DateTime RejectionDate { get; set; }
         [Required]
         [StringLength(100)]
@@ -17,7 +17,7 @@ namespace Client.Core.Entities.Client
 
 
         #region Navigation properties
-        public ClientApplication ClientApplication { get; set; }
+        public Client Client { get; set; }
         #endregion
     }
 }
