@@ -22,11 +22,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Client.Api
 {
     public class Startup
     {
+        public string ServiceName { get; set; } = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -63,6 +66,7 @@ namespace Client.Api
             services.AddScoped(typeof(IEfRepository<,>), typeof(EfRepository<,>));
             services.AddTransient<HttpClientExceptionHandler>(); // handle PMToolsException from another service
             services.AddHeaderPropagation(s => s.Headers.Add("Authorization")); // forward authorizatin header to api's
+            ConfigureSwagger(services);
 
             //Domain Bus
             services.AddSingleton<IEventBus, RabbitMQBus>(sp =>
@@ -75,7 +79,6 @@ namespace Client.Api
             services.AddTransient<UpdateStaffMemberEventHandler>();
             //Domain Events
             services.AddTransient<IEventHandler<UpdateStaffMemberCreatedEvent>, UpdateStaffMemberEventHandler>();
-
             services.AddMediatR(typeof(Startup));
             services.AddScoped<DbContext, ClientDbContext>();
 
@@ -86,7 +89,7 @@ namespace Client.Api
 
             services.AddScoped(typeof(IRejectedClientApplicationService), typeof(RejectedClientApplicationService));
             services.AddScoped(typeof(IClientRepository), typeof(ClientRepository));
-            services.AddScoped(typeof(IClientService), typeof(ClientService));
+            services.AddScoped(typeof(IPersonalClientService), typeof(PersonalClientService));
             services.AddScoped(typeof(IDocumentService), typeof(DocumentService));
         }
 
@@ -107,10 +110,18 @@ namespace Client.Api
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseSwagger();
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger(c =>
+            {
+                c.RouteTemplate = "client/swagger/{documentname}/swagger.json";
+            });
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Client Microservice V1");
+                c.SwaggerEndpoint("/client/swagger/v1/swagger.json", $"{ServiceName} API V1");
+                c.RoutePrefix = "client/swagger";
             });
 
             app.UseEndpoints(endpoints =>
@@ -124,6 +135,41 @@ namespace Client.Api
         {
             var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
             eventBus.Subscribe<UpdateStaffMemberCreatedEvent, UpdateStaffMemberEventHandler>();
+        }
+
+        private void ConfigureSwagger(IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = @"JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.
+                      Example: 'Bearer 12345abcdef'",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                  {
+                    {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                          {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                          },
+                          Scheme = "oauth2",
+                          Name = "Bearer",
+                          In = ParameterLocation.Header,
+
+                        },
+                        new List<string>()
+                    }
+                });
+            });
         }
     }
 }

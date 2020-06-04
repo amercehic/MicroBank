@@ -4,7 +4,7 @@ using MicroBank.Common.Specification;
 
 namespace Client.Core.Specifications
 {
-    public class ClientFilterspecification : BaseSpecification<Entities.Client.Client>
+    public class ClientFilterspecification : BaseSpecification<Entities.Client.PersonalClient>
     {
         public ClientFilterspecification(ClientFilter filter) : base(s =>
             (string.IsNullOrEmpty(filter.FirstName) || s.FirstName.ToLower().Trim().Contains(filter.FirstName.ToLower().Trim())) &&

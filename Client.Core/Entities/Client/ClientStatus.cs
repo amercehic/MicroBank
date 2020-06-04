@@ -1,5 +1,4 @@
-﻿using Client.Core.Exceptions;
-using Client.Core.Exceptions.Client;
+﻿using Client.Core.Exceptions.Client;
 using MicroBank.Common.ExceptionHandler.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -12,6 +11,8 @@ namespace Client.Core.Entities.Client
         public static string Pending = "PENDING";
         public static string Approved = "APPROVED";
         public static string Declined = "DECLINED";
+        public static string Active = "ACTIVE";
+        public static string Inactive = "INACTIVE";
 
         public static string ValidateAndGet(string status)
         {

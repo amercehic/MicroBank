@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Client.Core.Exceptions.Account
+﻿namespace Client.Core.Exceptions.Account
 {
     public class AccountApplicationErrorCodes
     {

@@ -9,7 +9,6 @@ namespace Client.Core.Models.BindingModel
         public DateTime DateOfBirth { get; set; }
         public string PersonalId { get; set; }
         public Guid OfficeId { get; set; }
-        public bool Active { get; set; }
         public string AddressLine { get; set; }
         public string Street { get; set; }
         public string Country { get; set; }

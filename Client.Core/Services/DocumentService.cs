@@ -17,9 +17,9 @@ namespace Client.Core.Services
     {
         private readonly ClaimsPrincipalUtil _claimsPrincipalUtil;
         private readonly IEfRepository<Document, Guid> _repository;
-        private readonly IEfRepository<Core.Entities.Client.Client, Guid> _clientEfRepository;
+        private readonly IEfRepository<Core.Entities.Client.PersonalClient, Guid> _clientEfRepository;
 
-        public DocumentService(ClaimsPrincipalUtil claimsPrincipalUtil, IEfRepository<Document, Guid> repository, IEfRepository<Core.Entities.Client.Client, Guid> clientEfRepository)
+        public DocumentService(ClaimsPrincipalUtil claimsPrincipalUtil, IEfRepository<Document, Guid> repository, IEfRepository<Core.Entities.Client.PersonalClient, Guid> clientEfRepository)
         {
             _claimsPrincipalUtil = claimsPrincipalUtil;
             _repository = repository;
