@@ -30,6 +30,8 @@ namespace Client.Core.Entities.Client
                 yield return Pending;
                 yield return Approved;
                 yield return Declined;
+                yield return Active;
+                yield return Inactive;
             }
         }
     }
