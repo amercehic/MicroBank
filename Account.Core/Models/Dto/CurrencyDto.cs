@@ -10,12 +10,12 @@ namespace Account.Core.Models.Dto
         public string Code { get; set; }
         public int CountryNumber { get; set; }
 
-        public CurrencyDto(Currency entity) : base(entity)
-        {
-            Country = entity.Country;
-            CurrencyName = entity.CurrencyName;
-            Code = entity.Code;
-            CountryNumber = entity.CountryNumber;
-        }
+        //public CurrencyDto(Currency entity) : base(entity)
+        //{
+        //    Country = entity.Country;
+        //    CurrencyName = entity.CurrencyName;
+        //    Code = entity.Code;
+        //    CountryNumber = entity.CountryNumber;
+        //}
     }
 }

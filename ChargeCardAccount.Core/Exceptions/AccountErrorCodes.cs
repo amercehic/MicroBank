@@ -8,5 +8,7 @@
         public static readonly string AccountStatusNotValid = "ACCOUNT_STATUS_NOT_VALID";
         public static readonly string InvalidCreditLineType = "INVALID_CREDIT_LINE_TYPE";
         public static readonly string InvalidCardType = "INVALID_CARD_TYPE";
+        public static readonly string BalanceTypeNotValid = "BALANCE_TYPE_NOT_VALID"; 
+        public static readonly string CreditDebitIndicatorNotValid = "CREDIT_DEBIT_INDICATOR_NOT_VALID";
     }
 }

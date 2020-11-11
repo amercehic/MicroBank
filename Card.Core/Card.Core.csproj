@@ -14,10 +14,12 @@
 
   <ItemGroup>
     <Folder Include="Integrations\EventBus\" />
+    <Folder Include="Integrations\Services\AccountApi\Models\" />
+    <Folder Include="Interfaces\Repository\" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MicroBank.Common\MicroBank.Common.csproj" />
   </ItemGroup>
-  
+
 </Project>

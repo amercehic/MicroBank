@@ -7,7 +7,6 @@ using Organisation.Core.Entities;
 using Organisation.Core.Exceptions;
 using Organisation.Core.Integrations.EventBus.Commands;
 using Organisation.Core.Integrations.Services.ClientApi;
-using Organisation.Core.Integrations.Services.ClientApi.Exceptions;
 using Organisation.Core.Interfaces.Service;
 using Organisation.Core.LogMessages;
 using Organisation.Core.Models.BindingModel;
@@ -17,7 +16,6 @@ using Organisation.Core.Specifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Organisation.Core.Services

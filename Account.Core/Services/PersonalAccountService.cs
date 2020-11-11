@@ -61,11 +61,7 @@ namespace Account.Core.Services
 
             var accountApplication = new Core.Entities.MainAccount()
             {
-                ClientId = clientFromRepo.Id,
-                ProductId = model.ProductId,
-                AccountType = Core.Entities.AccountType.Personal,
-                AccountSubType = model.AccountSubType,
-                SubmittedDate = DateTime.Now,
+                ClientId = clientFromRepo.Id
             };
             return new PersonalAccountDto();
         }

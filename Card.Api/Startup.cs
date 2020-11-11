@@ -1,9 +1,9 @@
-using MediatR;
+using Card.Core.Interfaces.Service;
+using Card.Core.Services;
+using Card.Infrastructure.Data;
 using MicroBank.Common.ExceptionHandler;
 using MicroBank.Common.Identity;
 using MicroBank.Common.Repository;
-using MicroBank.EventBus.Bus;
-using MicroBank.EventBusServiceBus.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -11,24 +11,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Organisation.Core.Integrations.EventBus.CommandHandlers;
-using Organisation.Core.Integrations.EventBus.Commands;
-using Organisation.Core.Integrations.Services.ClientApi;
-using Organisation.Core.Interfaces.Repository;
-using Organisation.Core.Interfaces.Service;
-using Organisation.Core.Services;
-using Organisation.Infrastructure.Data;
-using Organisation.Infrastructure.Integrations.Services;
-using Organisation.Infrastructure.Repository;
-using System;
+using System.Collections.Generic;
 using System.Reflection;
 
-namespace Organisation.Api
+namespace Card.Api
 {
     public class Startup
     {
         public string ServiceName { get; set; } = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -40,9 +30,10 @@ namespace Organisation.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers(options => options.Filters.Add(new HttpResponseExceptionFilter()));
-            services.AddDbContext<OrganisationDbContext>(options =>
+
+            services.AddDbContext<CardDbContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("OrganisationDbConnection"));
+                options.UseSqlServer(Configuration.GetConnectionString("CardDbConnection"));
             });
 
             services.AddAuthentication("Bearer")
@@ -55,7 +46,7 @@ namespace Organisation.Api
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Organization Microservice", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Client Microservice", Version = "v1" });
             });
 
             services.AddHttpContextAccessor();
@@ -63,30 +54,10 @@ namespace Organisation.Api
             services.AddScoped(typeof(IEfRepository<,>), typeof(EfRepository<,>));
             services.AddTransient<HttpClientExceptionHandler>(); // handle PMToolsException from another service
             services.AddHeaderPropagation(s => s.Headers.Add("Authorization")); // forward authorizatin header to api's
-            services.AddScoped<DbContext, OrganisationDbContext>();
+            ConfigureSwagger(services);
+            services.AddScoped<DbContext, CardDbContext>();
 
-            services.AddHttpClient<IClientApiService, ClientApiService>("ClientApiService", c =>
-            {
-                c.BaseAddress = new Uri(Configuration["ServiceUrls:ClientApi"]);
-            }).AddHeaderPropagation().AddHttpMessageHandler<HttpClientExceptionHandler>();
-
-
-
-            services.AddScoped(typeof(IOfficeRepository), typeof(OfficeRepository));
-            services.AddScoped(typeof(IOfficeService), typeof(OfficeService));
-
-            //Domain Bus
-            services.AddSingleton<IEventBus, RabbitMQBus>(sp =>
-            {
-                var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
-                return new RabbitMQBus(sp.GetService<IMediator>(), scopeFactory);
-            });
-            services.AddTransient<IRequestHandler<CreateUpdateStaffMemberCommand, bool>, UpdateStaffMemberCommandHandler>();
-
-            services.AddScoped(typeof(IStaffMemberRepository), typeof(StaffMemberRepository));
-            services.AddScoped(typeof(IStaffMemberService), typeof(StaffMemberService));
-            services.AddMediatR(typeof(Startup));
-
+            services.AddScoped(typeof(ICardService), typeof(CardService));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -97,10 +68,12 @@ namespace Organisation.Api
                 app.UseDeveloperExceptionPage();
             }
 
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
             app.UseHeaderPropagation();
+
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -108,15 +81,15 @@ namespace Organisation.Api
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger(c =>
             {
-                c.RouteTemplate = "organisation/swagger/{documentname}/swagger.json";
+                c.RouteTemplate = "client/swagger/{documentname}/swagger.json";
             });
 
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/organisation/swagger/v1/swagger.json", $"{ServiceName} API V1");
-                c.RoutePrefix = "organisation/swagger";
+                c.SwaggerEndpoint("/client/swagger/v1/swagger.json", $"{ServiceName} API V1");
+                c.RoutePrefix = "client/swagger";
             });
 
             app.UseEndpoints(endpoints =>
@@ -124,5 +97,41 @@ namespace Organisation.Api
                 endpoints.MapControllers();
             });
         }
+
+        private void ConfigureSwagger(IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = @"JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.
+                      Example: 'Bearer 12345abcdef'",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                  {
+                    {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                          {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                          },
+                          Scheme = "oauth2",
+                          Name = "Bearer",
+                          In = ParameterLocation.Header,
+
+                        },
+                        new List<string>()
+                    }
+                });
+            });
+        }
+
     }
 }

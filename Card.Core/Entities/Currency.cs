@@ -1,6 +1,6 @@
 ﻿using MicroBank.Common.Models;
 
-namespace Account.Core.Entities
+namespace Card.Core.Entities
 {
     public class Currency : BaseEntity<int>
     {

@@ -1,6 +1,5 @@
 ﻿using MicroBank.Common.Models;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -24,9 +23,5 @@ namespace Account.Core.Entities
         [Required]
         [StringLength(20)]
         public string Status { get; set; }
-
-        #region navProp
-        public ICollection<MainAccount> Accounts { get; }
-        #endregion navProp
     }
 }

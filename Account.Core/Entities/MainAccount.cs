@@ -9,9 +9,11 @@ namespace Account.Core.Entities
     {
         [Required]
         public Guid? ClientId { get; set; }
+        public int NumberOfAccounts { get; set; }
 
         #region NavProp
         public IEnumerable<Account> Accounts { get; set; }
+        public Client Client { get; set; }
         #endregion    
     }
 }

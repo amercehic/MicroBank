@@ -19,7 +19,7 @@ namespace ChargeCardAccount.Core.Models.Dto
             LastName = entity.LastName;
             DateOfBirth = entity.DateOfBirth;
             PersonalId = entity.PersonalId;
-            OfficeId = entity.OfficeId;
+            OfficeId = entity.OfficeId.Value;
             Status = entity.Status;
         }
     }
