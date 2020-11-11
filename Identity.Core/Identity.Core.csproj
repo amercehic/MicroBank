@@ -5,11 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
     <Folder Include="Exceptions\" />
     <Folder Include="Integrations\" />
     <Folder Include="Models\Dto\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -40,6 +40,19 @@ namespace MicroBank.Common.Identity
                 return _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
             }
         }
+
+        public Guid? ClientId
+        {
+            get
+            {
+                var clientId = _httpContextAccessor.HttpContext.User.FindFirst(MicroBankIdentityConstants.ClaimTypes.ClientId)?.Value;
+                if (clientId != null)
+                {
+                    return Guid.Parse(clientId);
+                }
+                return null;
+            }
+        }
     }
 
 }

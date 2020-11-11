@@ -1,8 +1,12 @@
 ﻿using Identity.Core.Entities;
+using IdentityModel;
+using IdentityServer4;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
+using MicroBank.Common.Identity;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -23,8 +27,22 @@ namespace MicroBank.Identity.Api.Services
 
             var claims = new List<Claim>(await _userManager.GetClaimsAsync(user));
 
-            context.IssuedClaims.AddRange(claims);
+            if (context.Caller == IdentityServerConstants.ProfileDataCallers.UserInfoEndpoint)
+            {
+                context.IssuedClaims = claims;
+            }
+            else
+            {
+                // list of claims in access_token
+                var allowedClaims = new string[] {
+                    JwtClaimTypes.Role,
+                    JwtClaimTypes.Name,
+                    JwtClaimTypes.Email,
+                    MicroBankIdentityConstants.ClaimTypes.ClientId,
+                };
 
+                context.IssuedClaims.AddRange(claims.Where(s => allowedClaims.Contains(s.Type)));
+            }
             await Task.FromResult(0);
         }
 
