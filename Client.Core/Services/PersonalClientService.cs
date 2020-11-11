@@ -14,11 +14,14 @@ using Client.Core.Models.BindingModel.ClientApplication;
 using Client.Core.Models.Dto.Client;
 using Client.Core.Models.Dto.ClientApplication;
 using Client.Core.Models.Filters;
+using Client.Core.Specifications;
 using MicroBank.Common.Identity;
 using MicroBank.Common.Models;
 using MicroBank.Common.Repository;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Client.Core.Services
@@ -74,7 +77,7 @@ namespace Client.Core.Services
         public async Task<RejectedClientApplicationDto> RejectClientApplicationAsync(Guid id, RejectedClientApplicationCreateBindingModel model)
         {
             var clientApplication = await _clientEfRepository.FindByAsync(
-                o => o.Id == id,
+                o => o.Id == id && o.Status == ClientStatus.Pending,
                 c => c.ClientContactData,
                 f => f.ClientFamilyDetailsData,
                 a => a.ClientAddressData).ConfigureAwait(false);
@@ -222,9 +225,16 @@ namespace Client.Core.Services
             return await GetByIdAsync(client.Id).ConfigureAwait(false);
         }
 
-        public Task<QueryResultDto<ClientDto, Guid>> GetByFilterAsync(ClientFilter filter)
+        public async Task<QueryResultDto<ClientDto, Guid>> GetByFilterAsync(ClientFilter filter)
         {
-            throw new NotImplementedException();
+            var spec = new ClientFilterspecification(filter);
+            (IEnumerable<PersonalClient> list, int totalCount) = await _clientEfRepository.ListAsync(spec).ConfigureAwait(false);
+
+            return new QueryResultDto<ClientDto, Guid>()
+            {
+                Items = list?.Select(s => new ClientDto(s)),
+                TotalCount = totalCount
+            };
         }
 
         public async Task<StaffMember> CreateStaffMemberIfNotExist(Guid id)
